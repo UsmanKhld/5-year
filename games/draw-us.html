@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Draw Us 🎨</title>
+<style>
+  body {
+    margin: 0;
+    background: #ffe6f0;
+    font-family: 'Comic Sans MS', cursive;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    user-select: none;
+  }
+  h2 {
+    color: #ff1493;
+    margin: 20px 0 10px 0;
+  }
+  #palette {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .color-swatch {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    box-shadow: 0 0 5px #ffb6c1;
+  }
+  .color-swatch.selected {
+    border-color: #ff1493;
+    box-shadow: 0 0 15px #ff1493;
+  }
+  #canvas {
+    border: 3px solid #ff1493;
+    border-radius: 12px;
+    background: white;
+    touch-action: none;
+  }
+  #buttons {
+    margin-top: 15px;
+    display: flex;
+    gap: 15px;
+  }
+  button, a.button-link {
+    background: #ff69b4;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    font-size: 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    box-shadow: 0 0 10px #ff99cc;
+    user-select: none;
+  }
+  button:hover, a.button-link:hover {
+    background: #ff1493;
+  }
+</style>
+</head>
+<body>
+
+<h2>Draw Us 🎨</h2>
+
+<div id="palette"></div>
+
+<canvas id="canvas" width="600" height="400"></canvas>
+
+<div id="buttons">
+  <button id="clearBtn">Clear</button>
+  <a href="../index.html" class="button-link">Back</a>
+</div>
+
+<script>
+  const colors = ['#ff1493', '#ff69b4', '#ffc0cb', '#ff85a2', '#ff4d6d', '#e75480'];
+  const palette = document.getElementById('palette');
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const clearBtn = document.getElementById('clearBtn');
+
+  let currentColor = colors[0];
+  let drawing = false;
+  let lastX = 0;
+  let lastY = 0;
+
+  // Create color swatches
+  colors.forEach((color, i) => {
+    const swatch = document.createElement('div');
+    swatch.className = 'color-swatch';
+    swatch.style.backgroundColor = color;
+    if (i === 0) swatch.classList.add('selected');
+    swatch.addEventListener('click', () => {
+      currentColor = color;
+      document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+      swatch.classList.add('selected');
+    });
+    palette.appendChild(swatch);
+  });
+
+  // Drawing functions
+  function startDrawing(e) {
+    drawing = true;
+    [lastX, lastY] = getPointerPos(e);
+  }
+
+  function stopDrawing() {
+    drawing = false;
+  }
+
+  function draw(e) {
+    if (!drawing) return;
+    const [x, y] = getPointerPos(e);
+    ctx.strokeStyle = currentColor;
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+
+    [lastX, lastY] = [x, y];
+  }
+
+  // Helper: get mouse/touch coords relative to canvas
+  function getPointerPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    if (e.touches) {
+      return [
+        e.touches[0].clientX - rect.left,
+        e.touches[0].clientY - rect.top,
+      ];
+    } else {
+      return [
+        e.clientX - rect.left,
+        e.clientY - rect.top,
+      ];
+    }
+  }
+
+  // Clear button clears the canvas
+  clearBtn.addEventListener('click', () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  });
+
+  // Events
+  canvas.addEventListener('mousedown', startDrawing);
+  canvas.addEventListener('mouseup', stopDrawing);
+  canvas.addEventListener('mouseout', stopDrawing);
+  canvas.addEventListener('mousemove', draw);
+
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); startDrawing(e); });
+  canvas.addEventListener('touchend', e => { e.preventDefault(); stopDrawing(e); });
+  canvas.addEventListener('touchcancel', e => { e.preventDefault(); stopDrawing(e); });
+  canvas.addEventListener('touchmove', e => { e.preventDefault(); draw(e); });
+</script>
+
+</body>
+</html>

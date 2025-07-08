@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Catch My Heart 💖</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #ffe6f0;
+      font-family: 'Comic Sans MS', cursive;
+    }
+
+    canvas {
+      display: block;
+      background: linear-gradient(to bottom, #ffb6c1, #fff0f5);
+    }
+
+    #message {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px pink;
+      font-size: 24px;
+      text-align: center;
+      display: none;
+      z-index: 2;
+    }
+
+    #back {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: #fff;
+      padding: 10px 15px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #ffa6c9;
+      text-decoration: none;
+      color: #ff1493;
+      font-weight: bold;
+      z-index: 3;
+    }
+
+    #progress-container {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: white;
+      width: 200px;
+      height: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 10px #ffb6c1;
+      z-index: 3;
+    }
+
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(to right, #ff69b4, #ff1493);
+      transition: width 0.2s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+  <a id="back" href="../index.html">← Back</a>
+
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+
+  <canvas id="game"></canvas>
+  <div id="message">You’ve captured my heart for 5 years straight! 💖</div>
+
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let hearts = [];
+    let score = 0;
+    const maxScore = 10;
+
+    const progressBar = document.getElementById('progress-bar');
+
+    const basket = {
+      x: canvas.width / 2 - 50,
+      y: canvas.height - 80,
+      width: 100,
+      height: 40,
+      color: '#ff69b4'
+    };
+
+    function drawBasket() {
+      ctx.fillStyle = basket.color;
+      ctx.fillRect(basket.x, basket.y, basket.width, basket.height);
+    }
+
+    function drawHeart(x, y) {
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.bezierCurveTo(x - 10, y - 20, x - 30, y + 10, x, y + 30);
+      ctx.bezierCurveTo(x + 30, y + 10, x + 10, y - 20, x, y);
+      ctx.fillStyle = 'red';
+      ctx.fill();
+    }
+
+    function spawnHeart() {
+      const x = Math.random() * (canvas.width - 30) + 15;
+      hearts.push({ x, y: -30, speed: 2 + Math.random() * 2 });
+    }
+
+    function updateProgressBar() {
+      const percentage = (score / maxScore) * 100;
+      progressBar.style.width = `${percentage}%`;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBasket();
+
+      for (let i = 0; i < hearts.length; i++) {
+        const heart = hearts[i];
+        heart.y += heart.speed;
+        drawHeart(heart.x, heart.y);
+
+        if (
+          heart.y + 20 >= basket.y &&
+          heart.x >= basket.x &&
+          heart.x <= basket.x + basket.width
+        ) {
+          hearts.splice(i, 1);
+          score++;
+          updateProgressBar();
+          i--;
+
+          if (score >= maxScore) {
+            document.getElementById('message').style.display = 'block';
+          }
+        }
+      }
+      requestAnimationFrame(draw);
+    }
+
+    setInterval(spawnHeart, 800);
+    draw();
+
+    window.addEventListener('mousemove', (e) => {
+      basket.x = e.clientX - basket.width / 2;
+    });
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      basket.y = canvas.height - 80;
+    });
+  </script>
+</body>
+</html>
